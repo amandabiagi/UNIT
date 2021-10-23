@@ -2,30 +2,30 @@ package amanda.biagi.unit.controllers;
 
 
 import amanda.biagi.unit.models.InfoUser;
-import amanda.biagi.unit.models.dto.InfoUserHDto;
 import amanda.biagi.unit.repositories.InfoUserRepository;
 import amanda.biagi.unit.service.InfoUserService;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.ResourceUtils;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.websocket.server.PathParam;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/info")
 public class UserInfoController {
 
-    List<InfoUserHDto> listHomologacao = new ArrayList<>();
+    List<InfoUser> listHomologacao = new ArrayList<>();
 
     @Autowired
     public InfoUserRepository infoUserRepository;
@@ -35,10 +35,11 @@ public class UserInfoController {
 
 
     @PostMapping("/enviar")
-    public ResponseEntity<InfoUserHDto> enviar( @RequestParam String infoUserStr, MultipartFile pdf){
+    public ResponseEntity<InfoUser> enviar( @RequestParam String infoUserStr, MultipartFile pdf){
 
         //Recebendo uma string por parametro e transformando em um objeto json
         JSONObject jsonObject = new JSONObject(infoUserStr);
+
 
         //Convertendo o objeto json em um objeto desejado, no caso em um infoUser
         InfoUser infoUser = new InfoUser(
@@ -48,12 +49,13 @@ public class UserInfoController {
                 jsonObject.getString("atividade")
         );
 
+        infoUser.setNomeDocumento(pdf.getOriginalFilename());
         //Montando o infoUser em um infoUserHDto colocando o nome do arquivo que foi recebido no parametro.
-        InfoUserHDto infoUserHDto = new InfoUserHDto(infoUser, pdf.getOriginalFilename());
+
 
         infoUserService.salvarPDF(pdf);
-        listHomologacao.add(infoUserHDto);
-        return ResponseEntity.created(null).body(infoUserHDto);
+        listHomologacao.add(infoUser);
+        return ResponseEntity.created(null).body(infoUser);
     }
 
     @GetMapping("/exibir")
@@ -62,8 +64,15 @@ public class UserInfoController {
     }
 
     @PostMapping("/salvar")
-    public ResponseEntity salvar(){
-        return ResponseEntity.created(null).build();
+    public ResponseEntity salvar(@RequestBody List<InfoUser> lista) throws Exception{
+
+        if (lista.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        for (InfoUser infoUser: lista) {
+            infoUserRepository.save(infoUser);
+        }
+        return ResponseEntity.accepted().body(lista);
     }
 
     @GetMapping(value = "/download/{nomeDoc}", produces = "application/pdf")
@@ -74,27 +83,19 @@ public class UserInfoController {
         return new ResponseEntity( new FileSystemResource(caminho), headers, HttpStatus.OK);
     }
 
-    @PostMapping("/homologar/{nomeDoc}")
-    public void homologar(@PathVariable String nomeDoc){
-
-        for (InfoUserHDto infoUserHDto: listHomologacao) {
-            if(infoUserHDto.getNomeDocumento().equals(nomeDoc)){
-                infoUserHDto.setStatus(true);
-            }
+    @GetMapping("buscar-ra/{ra}")
+    public ResponseEntity buscarNome(@RequestParam String ra){
+        List<InfoUser> infoUser = infoUserRepository.findByRa(Long.parseLong(ra));
+        if (infoUser == null){
+            return ResponseEntity.noContent().build();
         }
-
+        return ResponseEntity.ok(infoUser);
     }
 
-    @PostMapping("/nao-homologar/{nomeDoc}")
-    public void naoHomologar(@PathVariable String nomeDoc){
 
-        for (InfoUserHDto infoUserHDto: listHomologacao) {
-            if(infoUserHDto.getNomeDocumento().equals(nomeDoc)){
-                infoUserHDto.setStatus(false);
-            }
-        }
 
-    }
+
+
 
 
 

@@ -12,6 +12,7 @@ public class InfoUser {
     private String nomeAluno;
     private String quantidadeHoras;
     private String atividade;
+    private String nomeDocumento;
     private Boolean homologado = false;
 
 
@@ -20,6 +21,7 @@ public class InfoUser {
         this.nomeAluno = nomeAluno;
         this.quantidadeHoras = quantidadeHoras;
         this.atividade = atividade;
+
     }
 
     public InfoUser() {
@@ -62,7 +64,17 @@ public class InfoUser {
         this.homologado = status;
     }
 
+    public String getNomeDocumento() {
+        return nomeDocumento;
+    }
+
+    public void setNomeDocumento(String nomeDocumento) {
+        this.nomeDocumento = nomeDocumento;
+    }
+
     public Boolean getHomologado() {
         return homologado;
+
+
     }
 }
