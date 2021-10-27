@@ -1,7 +1,8 @@
 package amanda.biagi.unit.models;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -10,18 +11,14 @@ public class InfoUser {
     @Id
     private Long ra;
     private String nomeAluno;
-    private String quantidadeHoras;
-    private String atividade;
-    private String nomeDocumento;
-    private Boolean homologado = false;
+    @OneToMany(mappedBy = "fkAluno",targetEntity = Documento.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Documento> documentos;
 
 
-    public InfoUser(Long ra, String nomeAluno, String quantidadeHoras, String atividade) {
+    public InfoUser(Long ra, String nomeAluno) {
         this.ra = ra;
         this.nomeAluno = nomeAluno;
-        this.quantidadeHoras = quantidadeHoras;
-        this.atividade = atividade;
-
+        this.documentos = new ArrayList<>();
     }
 
     public InfoUser() {
@@ -43,38 +40,26 @@ public class InfoUser {
         this.nomeAluno = nomeAluno;
     }
 
-    public String getQuantidadeHoras() {
-        return quantidadeHoras;
+    public List<Documento> getDocumentos() {
+        return documentos;
     }
 
-    public void setQuantidadeHoras(String quantidadeHoras) {
-        this.quantidadeHoras = quantidadeHoras;
-    }
+//    public void setDocumentos(List<Documento> documentos) {
+//        this.documentos = documentos;
+//    }
 
-    public String getAtividade() {
-        return atividade;
-    }
-
-    public void setAtividade(String atividade) {
-        this.atividade = atividade;
+    public void setDocumentos(Documento documentos) {
+        this.documentos.add(documentos);
     }
 
 
-    public void setHomologado(Boolean status) {
-        this.homologado = status;
-    }
 
-    public String getNomeDocumento() {
-        return nomeDocumento;
-    }
-
-    public void setNomeDocumento(String nomeDocumento) {
-        this.nomeDocumento = nomeDocumento;
-    }
-
-    public Boolean getHomologado() {
-        return homologado;
-
-
+    @Override
+    public String toString() {
+        return "InfoUser{" +
+                "ra=" + ra +
+                ", nomeAluno='" + nomeAluno + '\'' +
+                ", documentos=" + documentos +
+                '}';
     }
 }

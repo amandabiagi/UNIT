@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface InfoUserRepository extends JpaRepository<InfoUser, Long> {
 
-    List<InfoUser> findByRa(Long ra);
+    InfoUser findByRa(Long ra);
 
 }
